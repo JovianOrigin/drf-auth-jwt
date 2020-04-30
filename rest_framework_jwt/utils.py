@@ -11,6 +11,8 @@ from rest_framework_jwt.compat import get_username
 from rest_framework_jwt.compat import get_username_field
 from rest_framework_jwt.settings import api_settings
 
+jwt_get_username_from_payload = api_settings.JWT_PAYLOAD_GET_USERNAME_HANDLER
+
 
 def jwt_get_secret_key(payload=None):
     """
@@ -23,8 +25,7 @@ def jwt_get_secret_key(payload=None):
     """
     if api_settings.JWT_GET_USER_SECRET_KEY:
         User = get_user_model()  # noqa: N806
-        username_field = get_username_field()
-        username = payload.get(username_field)
+        username = jwt_get_username_from_payload(payload)
         try:
             user = User.objects.get_by_natural_key(username)
         except User.DoesNotExist:
