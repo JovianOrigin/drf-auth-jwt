@@ -1,8 +1,6 @@
 REST framework JWT Auth
 =======================
 
-------------
-
 **JSON Web Token Authentication support for Django REST Framework**
 
 Full documentation for the project is available at `docs`_.
