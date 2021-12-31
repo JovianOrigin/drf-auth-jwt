@@ -1,6 +1,4 @@
 import jwt
-import uuid
-import warnings
 
 from django.contrib.auth import get_user_model
 
@@ -10,8 +8,6 @@ from datetime import datetime
 from rest_framework_jwt.compat import get_username
 from rest_framework_jwt.compat import get_username_field
 from rest_framework_jwt.settings import api_settings
-
-jwt_get_username_from_payload = api_settings.JWT_PAYLOAD_GET_USERNAME_HANDLER
 
 
 def jwt_get_secret_key(payload=None):
@@ -25,7 +21,11 @@ def jwt_get_secret_key(payload=None):
     """
     if api_settings.JWT_GET_USER_SECRET_KEY:
         User = get_user_model()  # noqa: N806
-        username = jwt_get_username_from_payload(payload)
+        if api_settings.JWT_PAYLOAD_GET_USERNAME_HANDLER:
+            username = api_settings.JWT_PAYLOAD_GET_USERNAME_HANDLER(payload)
+        else:
+            username_field = get_username_field()
+            username = payload.get(username_field)
         try:
             user = User.objects.get_by_natural_key(username)
         except User.DoesNotExist:
@@ -39,85 +39,57 @@ def jwt_payload_handler(user):
     username_field = get_username_field()
     username = get_username(user)
 
-    warnings.warn(
-        'The following fields will be removed in the future: '
-        '`email` and `user_id`. ',
-        DeprecationWarning
-    )
-
     payload = {
-        'user_id': user.pk,
-        'username': username,
-        'exp': datetime.utcnow() + api_settings.JWT_EXPIRATION_DELTA
+        "username": username,
+        "exp": timegm(
+            (datetime.utcnow() + api_settings.JWT_EXPIRATION_DELTA).utctimetuple()
+        ),
     }
-    if hasattr(user, 'email'):
-        payload['email'] = user.email
-    if isinstance(user.pk, uuid.UUID):
-        payload['user_id'] = str(user.pk)
 
     payload[username_field] = username
 
     # Include original issued at time for a brand new token,
     # to allow token refresh
     if api_settings.JWT_ALLOW_REFRESH:
-        payload['orig_iat'] = timegm(
-            datetime.utcnow().utctimetuple()
-        )
+        payload["orig_iat"] = timegm(datetime.utcnow().utctimetuple())
 
     if api_settings.JWT_AUDIENCE is not None:
-        payload['aud'] = api_settings.JWT_AUDIENCE
+        payload["aud"] = api_settings.JWT_AUDIENCE
 
     if api_settings.JWT_ISSUER is not None:
-        payload['iss'] = api_settings.JWT_ISSUER
+        payload["iss"] = api_settings.JWT_ISSUER
 
     return payload
-
-
-def jwt_get_user_id_from_payload_handler(payload):
-    """
-    Override this function if user_id is formatted differently in payload
-    """
-    warnings.warn(
-        'The following will be removed in the future. '
-        'Use `JWT_PAYLOAD_GET_USERNAME_HANDLER` instead.',
-        DeprecationWarning
-    )
-
-    return payload.get('user_id')
 
 
 def jwt_get_username_from_payload_handler(payload):
     """
     Override this function if username is formatted differently in payload
     """
-    return payload.get('username')
+    return payload.get("username")
 
 
 def jwt_encode_handler(payload):
     key = api_settings.JWT_PRIVATE_KEY or jwt_get_secret_key(payload)
-    return jwt.encode(
-        payload,
-        key,
-        api_settings.JWT_ALGORITHM
-    ).decode('utf-8')
+    return jwt.encode(payload, key, api_settings.JWT_ALGORITHM)
 
 
 def jwt_decode_handler(token):
     options = {
-        'verify_exp': api_settings.JWT_VERIFY_EXPIRATION,
+        "verify_exp": api_settings.JWT_VERIFY_EXPIRATION,
+        "verify_signature": api_settings.JWT_VERIFY,
     }
     # get user from token, BEFORE verification, to get user secret key
-    unverified_payload = jwt.decode(token, None, False)
+    unverified_payload = jwt.decode(token, None, options={"verify_signature": False})
     secret_key = jwt_get_secret_key(unverified_payload)
     return jwt.decode(
         token,
         api_settings.JWT_PUBLIC_KEY or secret_key,
-        api_settings.JWT_VERIFY,
         options=options,
         leeway=api_settings.JWT_LEEWAY,
         audience=api_settings.JWT_AUDIENCE,
         issuer=api_settings.JWT_ISSUER,
-        algorithms=[api_settings.JWT_ALGORITHM]
+        algorithms=[api_settings.JWT_ALGORITHM],
     )
 
 
@@ -136,6 +108,4 @@ def jwt_response_payload_handler(token, user=None, request=None):
         }
 
     """
-    return {
-        'token': token
-    }
+    return {"token": token}
