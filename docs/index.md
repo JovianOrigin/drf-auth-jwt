@@ -1,8 +1,17 @@
+<div class="badges">
+    <a href="https://github.com/JovianOrigin/drf-auth-jwt/actions">
+        <img src="https://github.com/JovianOrigin/drf-auth-jwt/actions/workflows/test.yml/badge.svg?branch=master">
+    </a>
+    <a href="https://pypi.python.org/pypi/drf-auth-jwt">
+        <img src="https://img.shields.io/pypi/v/drf-auth-jwt.svg">
+    </a>
+</div>
+
 ---
+
 # REST framework JWT Auth
 
-JSON Web Token Authentication support for Django REST Framework
----
+## JSON Web Token Authentication support for Django REST Framework
 
 ## Overview
 
@@ -15,7 +24,7 @@ If you want to know more about JWT, check out the following resources:
 ## Requirements
 
 - Python (3.8, 3.9, 3.10)
-- Django (4.0)
+- Django (3.2, 4.0)
 - Django REST Framework (3.13)
 
 ## Security

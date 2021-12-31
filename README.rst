@@ -1,7 +1,7 @@
 REST framework JWT Auth
 =======================
 
-------------
+|build-status-image| |pypi-version|
 
 **JSON Web Token Authentication support for Django REST Framework**
 
@@ -17,7 +17,7 @@ Requirements
 ------------
 
 -  Python (3.8, 3.9, 3.10)
--  Django (4.0)
+-  Django (3.2, 4.0)
 -  Django REST Framework (3.13)
 
 Installation
@@ -42,3 +42,8 @@ You may also want to follow the `author`_ on Twitter.
 .. _Video: https://www.youtube.com/watch?v=825hodQ61bg
 .. _JWT.io: http://jwt.io/
 .. _author: https://twitter.com/lungeloSLX
+
+.. |build-status-image| image:: https://github.com/JovianOrigin/drf-auth-jwt/actions/workflows/test.yml/badge.svg?branch=master
+    :target: https://github.com/JovianOrigin/drf-auth-jwt/actions
+.. |pypi-version| image:: https://img.shields.io/pypi/v/drf-auth-jwt.svg
+    :target: https://pypi.python.org/pypi/drf-auth-jwt
