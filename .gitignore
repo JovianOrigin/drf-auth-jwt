@@ -19,3 +19,4 @@ local/
 !.coveragerc
 !.gitignore
 !.travis.yml
+!/.github

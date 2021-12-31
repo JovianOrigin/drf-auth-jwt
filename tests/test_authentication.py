@@ -68,8 +68,7 @@ class JSONWebTokenAuthenticationTests(TestCase):
         self.assertEqual(response.wsgi_request.user, self.user)
         payload = response.wsgi_request.auth
         self.assertIsInstance(payload, dict)
-        self.assertEqual(set(payload.keys()), {
-            'user_id', 'username', 'exp', 'email'})
+        self.assertEqual(set(payload.keys()), {'username', 'exp'})
 
     def test_post_json_passing_jwt_auth(self):
         """
