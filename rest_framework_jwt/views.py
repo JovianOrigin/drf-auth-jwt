@@ -1,14 +1,15 @@
-from rest_framework.views import APIView
+from datetime import datetime, timezone
+
 from rest_framework import status
 from rest_framework.response import Response
-from datetime import datetime
+from rest_framework.views import APIView
 
-from .settings import api_settings
 from .serializers import (
     JSONWebTokenSerializer,
     RefreshJSONWebTokenSerializer,
     VerifyJSONWebTokenSerializer,
 )
+from .settings import api_settings
 
 jwt_response_payload_handler = api_settings.JWT_RESPONSE_PAYLOAD_HANDLER
 
@@ -62,7 +63,9 @@ class JSONWebTokenAPIView(APIView):
             response_data = jwt_response_payload_handler(token, user, request)
             response = Response(response_data)
             if api_settings.JWT_AUTH_COOKIE:
-                expiration = datetime.utcnow() + api_settings.JWT_EXPIRATION_DELTA
+                expiration = (
+                    datetime.now(timezone.utc) + api_settings.JWT_EXPIRATION_DELTA
+                )
                 response.set_cookie(
                     api_settings.JWT_AUTH_COOKIE,
                     token,

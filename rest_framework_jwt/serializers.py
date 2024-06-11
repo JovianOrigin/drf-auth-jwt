@@ -1,16 +1,15 @@
-import jwt
-
 from calendar import timegm
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
+import jwt
 from django.contrib.auth import authenticate, get_user_model
 from django.utils.translation import gettext as _
 from rest_framework import serializers
-from .compat import Serializer
 
+from rest_framework_jwt.compat import PasswordField, get_username_field
 from rest_framework_jwt.settings import api_settings
-from rest_framework_jwt.compat import get_username_field, PasswordField
 
+from .compat import Serializer
 
 User = get_user_model()
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
@@ -148,7 +147,7 @@ class RefreshJSONWebTokenSerializer(VerificationBaseSerializer):
                 refresh_limit = refresh_limit.days * 24 * 3600 + refresh_limit.seconds
 
             expiration_timestamp = orig_iat + int(refresh_limit)
-            now_timestamp = timegm(datetime.utcnow().utctimetuple())
+            now_timestamp = timegm(datetime.now(timezone.utc).utctimetuple())
 
             if now_timestamp > expiration_timestamp:
                 msg = _("Refresh has expired.")
