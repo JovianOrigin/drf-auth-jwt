@@ -234,7 +234,7 @@ Default is `0` seconds.
 
 ### JWT_EXPIRATION_DELTA
 
-This is an instance of Python's `datetime.timedelta`. This will be added to `datetime.utcnow()` to set the expiration time.
+This is an instance of Python's `datetime.timedelta`. This will be added to `datetime.now(datetime.timezone.utc)` to set the expiration time.
 
 Default is `datetime.timedelta(seconds=300)`(5 minutes).
 
@@ -304,7 +304,7 @@ Default is `None` and no cookie is set when creating tokens nor accepted when va
 
 ## Extending `JSONWebTokenAuthentication`
 
-Right now `JSONWebTokenAuthentication` assumes that the JWT will come in the header, or a cookie if configured (see [JWT_AUTH_COOKIE](#JWT_AUTH_COOKIE)). The JWT spec does not require this (see: [Making a service Call](https://developer.atlassian.com/static/connect/docs/concepts/authentication.html)). For example, the JWT may come in the querystring. The ability to send the JWT in the querystring is needed in cases where the user cannot set the header (for example the src element in HTML).
+Right now `JSONWebTokenAuthentication` assumes that the JWT will come in the header, or a cookie if configured (see [JWT_AUTH_COOKIE](#jwt_auth_cookie)). The JWT spec does not require this (see: [Making a service Call](https://developer.atlassian.com/static/connect/docs/concepts/authentication.html)). For example, the JWT may come in the querystring. The ability to send the JWT in the querystring is needed in cases where the user cannot set the header (for example the src element in HTML).
 
 To achieve this functionality, the user might write a custom `Authentication`:
 

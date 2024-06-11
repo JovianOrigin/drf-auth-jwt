@@ -1,7 +1,7 @@
+import time
 import unittest
 from calendar import timegm
-from datetime import datetime, timedelta
-import time
+from datetime import datetime, timedelta, timezone
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -13,7 +13,7 @@ from rest_framework.test import APIClient
 
 from rest_framework_jwt import utils, views
 from rest_framework_jwt.compat import get_user_model
-from rest_framework_jwt.settings import api_settings, DEFAULTS
+from rest_framework_jwt.settings import DEFAULTS, api_settings
 
 from . import utils as test_utils
 
@@ -276,8 +276,8 @@ class VerifyJSONWebTokenTestsSymmetric(TokenTestCase):
         # Make an expired token..
         token = self.create_token(
             self.user,
-            exp=datetime.utcnow() - timedelta(seconds=5),
-            orig_iat=datetime.utcnow() - timedelta(hours=1),
+            exp=datetime.now(timezone.utc) - timedelta(seconds=5),
+            orig_iat=datetime.now(timezone.utc) - timedelta(hours=1),
         )
 
         response = client.post("/auth-token-verify/", {"token": token}, format="json")
@@ -356,8 +356,8 @@ class VerifyJSONWebTokenTestsAsymmetric(TokenTestCase):
         # Make an expired token..
         token = self.create_token(
             self.user,
-            exp=datetime.utcnow() - timedelta(seconds=5),
-            orig_iat=datetime.utcnow() - timedelta(hours=1),
+            exp=datetime.now(timezone.utc) - timedelta(seconds=5),
+            orig_iat=datetime.now(timezone.utc) - timedelta(hours=1),
         )
 
         response = client.post("/auth-token-verify/", {"token": token}, format="json")
@@ -429,7 +429,7 @@ class RefreshJSONWebTokenTests(TokenTestCase):
         orig_token = self.get_token()
         orig_token_decoded = utils.jwt_decode_handler(orig_token)
 
-        expected_orig_iat = timegm(datetime.utcnow().utctimetuple())
+        expected_orig_iat = timegm(datetime.now(timezone.utc).utctimetuple())
 
         # Make sure 'orig_iat' exists and is the current time (give some slack)
         orig_iat = orig_token_decoded["orig_iat"]
@@ -457,12 +457,14 @@ class RefreshJSONWebTokenTests(TokenTestCase):
         client = APIClient(enforce_csrf_checks=True)
 
         orig_iat = (
-            datetime.utcnow()
+            datetime.now(timezone.utc)
             - api_settings.JWT_REFRESH_EXPIRATION_DELTA
             - timedelta(seconds=5)
         )
         token = self.create_token(
-            self.user, exp=datetime.utcnow() + timedelta(hours=1), orig_iat=orig_iat
+            self.user,
+            exp=datetime.now(timezone.utc) + timedelta(hours=1),
+            orig_iat=orig_iat,
         )
 
         response = client.post("/auth-token-refresh/", {"token": token}, format="json")

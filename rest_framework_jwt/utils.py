@@ -1,12 +1,10 @@
-import jwt
+from calendar import timegm
+from datetime import datetime, timezone
 
+import jwt
 from django.contrib.auth import get_user_model
 
-from calendar import timegm
-from datetime import datetime
-
-from rest_framework_jwt.compat import get_username
-from rest_framework_jwt.compat import get_username_field
+from rest_framework_jwt.compat import get_username, get_username_field
 from rest_framework_jwt.settings import api_settings
 
 
@@ -42,7 +40,9 @@ def jwt_payload_handler(user):
     payload = {
         "username": username,
         "exp": timegm(
-            (datetime.utcnow() + api_settings.JWT_EXPIRATION_DELTA).utctimetuple()
+            (
+                datetime.now(timezone.utc) + api_settings.JWT_EXPIRATION_DELTA
+            ).utctimetuple()
         ),
     }
 
@@ -51,7 +51,7 @@ def jwt_payload_handler(user):
     # Include original issued at time for a brand new token,
     # to allow token refresh
     if api_settings.JWT_ALLOW_REFRESH:
-        payload["orig_iat"] = timegm(datetime.utcnow().utctimetuple())
+        payload["orig_iat"] = timegm(datetime.now(timezone.utc).utctimetuple())
 
     if api_settings.JWT_AUDIENCE is not None:
         payload["aud"] = api_settings.JWT_AUDIENCE
